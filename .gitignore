@@ -1,0 +1,9 @@
+Include/
+Lib/
+Scripts/
+bin/
+pyvenv.cfg
+pip-selfcheck.json
+*.pkl
+
+SimpleImageDataset/
