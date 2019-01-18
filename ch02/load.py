@@ -21,9 +21,10 @@ def load_dataset(dataset_name):
     '''
     data = []
     labels = []
-    with open('../data/{0}.tsv'.format(dataset_name)) as ifile:
+    with open('./data/{0}.tsv'.format(dataset_name)) as ifile:
         for line in ifile:
             tokens = line.strip().split('\t')
+            tokens = [tk for tk in tokens if tk] # 空データは削除
             data.append([float(tk) for tk in tokens[:-1]])
             labels.append(tokens[-1])
     data = np.array(data)
