@@ -31,7 +31,7 @@ import getpass
 import json
 import os
 import time
-import urllib
+import urllib.request
 
 
 def get_user_params(data_path):
@@ -66,12 +66,12 @@ def dump_user_params(user_params):
 def read_total_list(in_filename):
 
     # read total fetch list csv
-    fp = open(in_filename, 'rb')
-    reader = csv.reader(fp, delimiter=',', quotechar='"')
+    with open(in_filename, 'r') as fp:
+        reader = csv.reader(fp, delimiter=',', quotechar='"')
 
-    total_list = []
-    for row in reader:
-        total_list.append(row)
+        total_list = []
+        for row in reader:
+            total_list.append(row)
 
     return total_list
 
@@ -134,7 +134,7 @@ def download_tweets(fetch_list, raw_dir):
 
         # pull data
         url = 'http://api.twitter.com/1/statuses/show.json?id=' + item[2]
-        urllib.urlretrieve(url, raw_dir + item[2] + '.json')
+        urllib.request.urlretrieve(url, raw_dir + item[2] + '.json')
 
         # stay in Twitter API rate limits
         print('    pausing %d sec to obey Twitter API rate limits' % (download_pause_sec))
@@ -147,17 +147,17 @@ def parse_tweet_json(filename):
 
     # read tweet
     print('opening: ' + filename)
-    fp = open(filename, 'rb')
+    with open(filename, 'rb') as fp:
 
-    # parse json
-    try:
-        tweet_json = json.load(fp)
-    except ValueError:
-        raise RuntimeError('error parsing json')
+        # parse json
+        try:
+            tweet_json = json.load(fp)
+        except ValueError:
+            raise RuntimeError('error parsing json')
 
-    # look for twitter api error msgs
-    if 'error' in tweet_json or 'errors' in tweet_json:
-        raise RuntimeError('error in downloaded tweet')
+        # look for twitter api error msgs
+        if 'error' in tweet_json or 'errors' in tweet_json:
+            raise RuntimeError('error in downloaded tweet')
 
     # extract creation date and tweet text
     return [tweet_json['created_at'], tweet_json['text']]
@@ -166,40 +166,40 @@ def parse_tweet_json(filename):
 def build_output_corpus(out_filename, raw_dir, total_list):
 
     # open csv output file
-    fp = open(out_filename, 'wb')
-    writer = csv.writer(fp, delimiter=',', quotechar='"', escapechar='\\',
-                        quoting=csv.QUOTE_ALL)
+    with open(out_filename, 'wb') as fp:
+        writer = csv.writer(fp, delimiter=',', quotechar='"', escapechar='\\',
+                            quoting=csv.QUOTE_ALL)
 
-    # write header row
-    writer.writerow(
-        ['Topic', 'Sentiment', 'TweetId', 'TweetDate', 'TweetText'])
+        # write header row
+        writer.writerow(
+            ['Topic', 'Sentiment', 'TweetId', 'TweetDate', 'TweetText'])
 
-    # parse all downloaded tweets
-    missing_count = 0
-    for item in total_list:
+        # parse all downloaded tweets
+        missing_count = 0
+        for item in total_list:
 
-        # ensure tweet exists
-        if os.path.exists(raw_dir + item[2] + '.json'):
+            # ensure tweet exists
+            if os.path.exists(raw_dir + item[2] + '.json'):
 
-            try:
-                # parse tweet
-                parsed_tweet = parse_tweet_json(raw_dir + item[2] + '.json')
-                full_row = item + parsed_tweet
+                try:
+                    # parse tweet
+                    parsed_tweet = parse_tweet_json(raw_dir + item[2] + '.json')
+                    full_row = item + parsed_tweet
 
-                # character encoding for output
-                for i in range(0, len(full_row)):
-                    full_row[i] = full_row[i].encode("utf-8")
+                    # character encoding for output
+                    for i in range(0, len(full_row)):
+                        full_row[i] = full_row[i].encode("utf-8")
 
-                # write csv row
-                writer.writerow(full_row)
+                    # write csv row
+                    writer.writerow(full_row)
 
-            except RuntimeError:
-                print('--> bad data in tweet #' + item[2])
+                except RuntimeError:
+                    print('--> bad data in tweet #' + item[2])
+                    missing_count += 1
+
+            else:
+                print('--> missing tweet #' + item[2])
                 missing_count += 1
-
-        else:
-            print('--> missing tweet #' + item[2])
-            missing_count += 1
 
     # indicate success
     if missing_count == 0:
@@ -237,4 +237,4 @@ def main(data_path):
 
 
 if __name__ == '__main__':
-    main(os.path.join("..", "data"))
+    main(os.path.join("..", "data", "twitter"))
