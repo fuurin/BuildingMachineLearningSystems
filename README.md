@@ -1,3 +1,6 @@
 # 実線機械学習システム まとめ
 
-書籍ではPython2.7で書いてるが，ダウンロードしたコードは3系みたいなのでそのままいく
+英語版のリポジトリ
+https://github.com/luispedro/BuildingMachineLearningSystemsWithPython  
+
+Python3で書いていく

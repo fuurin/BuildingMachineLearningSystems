@@ -37,7 +37,7 @@ def load_sanders_data(dirname=".", line_count=-1):
     labels = []
     tweets = []
 
-    with open(os.path.join(DATA_DIR, dirname, "corpus.csv"), "r") as csvfile:
+    with open(os.path.join(DATA_DIR, "corpus.csv"), "r") as csvfile:
         metareader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for line in metareader:
             count += 1
@@ -112,7 +112,7 @@ def show_most_informative_features(vectorizer, clf, n=20):
     c_f = sorted(zip(clf.coef_[0], vectorizer.get_feature_names()))
     top = zip(c_f[:n], c_f[:-(n + 1):-1])
     for (c1, f1), (c2, f2) in top:
-        print "\t%.4f\t%-15s\t\t%.4f\t%-15s" % (c1, f1, c2, f2)
+        print("\t%.4f\t%-15s\t\t%.4f\t%-15s" % (c1, f1, c2, f2))
 
 
 def plot_log():
