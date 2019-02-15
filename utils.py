@@ -14,5 +14,9 @@ def create_or_load_pickle(data_path, create_func, create_new=False):
     
     return obj
 
+import warnings
+def ignore_warnings():
+    warnings.filterwarnings('ignore')
+
 def p(*args):
     print(*args)
