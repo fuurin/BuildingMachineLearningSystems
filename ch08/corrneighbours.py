@@ -6,11 +6,11 @@
 # It is made available under the MIT License
 
 from __future__ import print_function
-from all_correlations import all_correlations
+from .all_correlations import all_correlations
 import numpy as np
 from scipy import sparse
-from load_ml100k import load
-reviews = load()
+from .load_ml100k import load
+# reviews = load()
 
 
 def estimate_user(user, rest):
@@ -34,9 +34,10 @@ def train_test(user, rest):
     return np.dot(err, err), np.dot(nerr, nerr)
 
 
-def cross_validate_all():
+def cross_validate_all(reviews):
     err = []
-    for i in xrange(reviews.shape[0]):
+    reviews = reviews.toarray()
+    for i in range(reviews.shape[0]):
         err.append(
             train_test(reviews[i], np.delete(reviews, i, 0))
         )
@@ -50,6 +51,6 @@ def cross_validate_all():
 def all_estimates(reviews):
     reviews = reviews.toarray()
     estimates = np.zeros_like(reviews)
-    for i in xrange(reviews.shape[0]):
+    for i in range(reviews.shape[0]):
         estimates[i] = estimate_user(reviews[i], np.delete(reviews, i, 0))
     return estimates

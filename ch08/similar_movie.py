@@ -7,8 +7,8 @@
 
 from __future__ import print_function
 import numpy as np
-from load_ml100k import load
-from all_correlations import all_correlations
+from .load_ml100k import load
+from .all_correlations import all_correlations
 
 
 def nn_movie(ureviews, reviews, uid, mid, k=1):
@@ -33,7 +33,7 @@ def nn_movie(ureviews, reviews, uid, mid, k=1):
 
 
 def all_estimates(reviews, k=1):
-    reviews = reviews.astype(float)
+    reviews = reviews.toarray().astype(float)
     k -= 1
     nusers, nmovies = reviews.shape
     estimates = np.zeros_like(reviews)
