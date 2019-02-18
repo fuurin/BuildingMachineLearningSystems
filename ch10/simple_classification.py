@@ -6,13 +6,13 @@
 # It is made available under the MIT License
 
 import mahotas as mh
-from sklearn import cross_validation
+from sklearn.model_selection import cross_val_score
 from sklearn.linear_model.logistic import LogisticRegression
 import numpy as np
 from glob import glob
 from edginess import edginess_sobel
 
-basedir = 'simple-dataset'
+basedir = '../data/ch10/SimpleImageDataset'
 
 
 def features_for(im):
@@ -31,12 +31,12 @@ for im in images:
 features = np.array(features)
 labels = np.array(labels)
 
-scores = cross_validation.cross_val_score(
+scores = cross_val_score(
     LogisticRegression(), features, labels, cv=5)
 print('Accuracy (5 fold x-val) with Logistic Regrssion [std features]: {}%'.format(
     0.1 * round(1000 * scores.mean())))
 
-scores = cross_validation.cross_val_score(
+scores = cross_val_score(
     LogisticRegression(), np.hstack([np.atleast_2d(sobels).T, features]), labels, cv=5).mean()
 print('Accuracy (5 fold x-val) with Logistic Regrssion [std features + sobel]: {}%'.format(
     0.1 * round(1000 * scores.mean())))
