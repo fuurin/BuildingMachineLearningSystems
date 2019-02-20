@@ -10,6 +10,7 @@
 # to a question that has been asked in 2011 or 2012.
 #
 
+import sys
 import os
 import re
 try:
@@ -24,14 +25,19 @@ from collections import defaultdict
 
 from data import DATA_DIR
 
-filename = os.path.join(DATA_DIR, "posts-2011-12.xml")
+#filename = os.path.join(DATA_DIR, "posts-2011-12.xml")
+filename = os.path.join(DATA_DIR, "posts-2012.xml")
+print("Reading from xml %s" % filename)
 filename_filtered = os.path.join(DATA_DIR, "filtered.tsv")
+print("Filtered: %s" % filename_filtered)
+filename_filtered_meta = os.path.join(DATA_DIR, "filtered-meta.json")
+print("Meta: %s" % filename_filtered_meta)
 
 q_creation = {}  # creation datetimes of questions
 q_accepted = {}  # id of accepted answer
 
-meta = defaultdict(
-    list)  # question -> [(answer Id, IsAccepted, TimeToAnswer, Score), ...]
+# question -> [(answer Id, IsAccepted, TimeToAnswer, Score), ...]
+meta = defaultdict(list)
 
 # regegx to find code snippets
 code_match = re.compile('<pre>(.*?)</pre>', re.MULTILINE | re.DOTALL)
@@ -56,26 +62,31 @@ def filter_html(s):
         # sometimes source code contain links, which we don't want to count
         link_count_in_code += len(link_match.findall(match_str))
 
-    anchors = link_match.findall(s)
-    link_count = len(anchors)
+    links = link_match.findall(s)
+    link_count = len(links)
 
     link_count -= link_count_in_code
 
-    html_free_s = re.sub(
+    link_free_s = re.sub(
         " +", " ", tag_match.sub('', code_free_s)).replace("\n", "")
 
-    link_free_s = html_free_s
-    for anchor in anchors:
-        if anchor.lower().startswith("http://"):
-            link_free_s = link_free_s.replace(anchor, '')
+    for link in links:
+        if link.lower().startswith("http://"):
+            link_free_s = link_free_s.replace(link, '')
 
-    num_text_tokens = html_free_s.count(" ")
+    num_text_tokens = link_free_s.count(" ")
 
     return link_free_s, num_text_tokens, num_code_lines, link_count, num_images
 
 years = defaultdict(int)
 num_questions = 0
 num_answers = 0
+
+if sys.version_info.major < 3:
+    # Python 2, map() returns a list, which will lead to out of memory errors.
+    # The following import ensures that the script behaves like being executed
+    # with Python 3.
+    from itertools import imap as map
 
 
 def parsexml(filename):
@@ -85,11 +96,12 @@ def parsexml(filename):
 
     it = map(itemgetter(1),
              iter(etree.iterparse(filename, events=('start',))))
+
     root = next(it)  # get posts element
 
     for elem in it:
         if counter % 100000 == 0:
-            print(counter)
+            print("Processed %i <row/> elements" % counter)
 
         counter += 1
 
@@ -138,19 +150,19 @@ def parsexml(filename):
             values = (Id, ParentId,
                       IsAccepted,
                       TimeToAnswer, Score,
-                      Text,
+                      Text.encode("utf-8"),
                       NumTextTokens, NumCodeLines, LinkCount, NumImages)
 
             yield values
 
             root.clear()  # preserve memory
 
-with open(os.path.join(DATA_DIR, filename_filtered), "w") as f:
-    for item in parsexml(filename):
-        line = "\t".join(map(str, item))
-        f.write(line.encode("utf-8") + "\n")
+with open(filename_filtered, "w") as f:
+    for values in parsexml(filename):
+        line = "\t".join(map(str, values))
+        f.write(line + "\n")
 
-with open(os.path.join(DATA_DIR, "filtered-meta.json"), "w") as f:
+with open(filename_filtered_meta, "w") as f:
     json.dump(meta, f)
 
 print("years:", years)
