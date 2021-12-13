@@ -39,7 +39,7 @@ jupyter-nbextensions-configurator==0.4.1
 kiwisolver==1.0.1
 librosa==0.6.3
 llvmlite==0.27.0
-lxml==4.3.1
+lxml==4.6.5
 mahotas==1.4.5
 MarkupSafe==1.1.0
 matplotlib==3.0.2
